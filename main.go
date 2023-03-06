@@ -4,6 +4,9 @@ import (
 	"embed"
 	"flag"
 	"fmt"
+	"io/fs"
+	"log"
+	"net/http"
 	"os"
 
 	"github.com/a3510377/class-location-generation/version"
@@ -13,6 +16,9 @@ import (
 
 //go:embed templates/*
 var templates embed.FS
+
+//go:embed public/*
+var webPublic embed.FS
 
 var (
 	flagVersion = flag.Bool("version", false, "show version")
@@ -33,6 +39,24 @@ func main() {
 	}
 	mainLog := newLog("main")
 	mainLog.Info()
+
+	staticFs := fs.FS(webPublic)
+	htmlContent, err := fs.Sub(staticFs, "public")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	fs := http.FileServer(http.FS(htmlContent))
+
+	http.Handle("/", fs)
+
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "8080"
+	}
+	if err := http.ListenAndServe(fmt.Sprintf(":%s", port), nil); err != nil {
+		log.Fatal(err)
+	}
 }
 
 func setupLogger() *logrus.Logger {
