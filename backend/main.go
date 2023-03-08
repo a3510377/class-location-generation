@@ -8,6 +8,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strings"
 
 	"github.com/a3510377/class-location-generation/version"
 	"github.com/sirupsen/logrus"
@@ -17,13 +18,15 @@ import (
 //go:embed templates/*
 var templates embed.FS
 
-//go:embed public/*
-var webPublic embed.FS
+//go:embed web
+var webFile embed.FS
 
 var (
 	flagVersion = flag.Bool("version", false, "show version")
 	flagDebug   = flag.Bool("debug", false, "enable debug")
 )
+
+const webStaticPath = "static"
 
 func main() {
 	flag.Parse()
@@ -40,15 +43,20 @@ func main() {
 	mainLog := newLog("main")
 	mainLog.Info()
 
-	staticFs := fs.FS(webPublic)
-	htmlContent, err := fs.Sub(staticFs, "public")
-	if err != nil {
-		log.Fatal(err)
-	}
+	webFileFS := fs.FS(webFile)
+	http.Handle("/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Cache-Control", "no-cache")
 
-	fs := http.FileServer(http.FS(htmlContent))
-
-	http.Handle("/", fs)
+		fmt.Println(r.URL.Path)
+		if r.URL.Path == "/" {
+			r.URL.Path = fmt.Sprintf("/%s/", webStaticPath)
+		} else {
+			b := strings.Split(r.URL.Path, "/")[0]
+			if b != webStaticPath {
+			}
+		}
+		http.FileServer(http.FS(webFileFS)).ServeHTTP(w, r)
+	}))
 
 	port := os.Getenv("PORT")
 	if port == "" {
