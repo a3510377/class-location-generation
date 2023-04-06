@@ -6,6 +6,14 @@ const getTouchIdentifier = (e: TouchEvent) => {
   return e.touches[0];
 };
 
+const closest = (el: HTMLElement, ctx: HTMLElement) => {
+  do {
+    if (el === ctx) return el;
+  } while ((el = el.parentNode as HTMLElement));
+
+  return void 0;
+};
+
 export default function Home() {
   const x = 7;
   const y = 7;
@@ -113,10 +121,6 @@ export default function Home() {
                   const clearState = (e: SyntheticEvent) => {
                     state.ghostEl?.parentNode?.removeChild(state.ghostEl);
 
-                    setData((d) => {
-                      const st = d[XI][YI];
-                    });
-
                     setState((state) => ({
                       ...state,
                       dragging: '',
@@ -128,10 +132,22 @@ export default function Home() {
                     if (!state.dragging) return;
 
                     const {
-                      dataset: { id },
-                    } = e.target as HTMLElement;
+                      dataset: { id = '' },
+                    } =
+                      closest(
+                        e.target as HTMLElement,
+                        ref.current as HTMLElement
+                      ) || (e.target as HTMLElement);
 
-                    if (id) setState((state) => ({ ...state, dragover: id }));
+                    setState((state) => ({ ...state, dragover: id }));
+                    setData((da) => {
+                      const [x, y] = id.split('-').map((d) => +d);
+                      const [dx, dy] = state.dragging.split('-').map((d) => +d);
+                      const tmp = da[x][y];
+
+                      da[x][y] = da[dx][dy];
+                      da[dx][dy] = tmp;
+                    });
 
                     if (e.type === 'touchmove') {
                       const ghostEl = state.ghostEl;
@@ -145,9 +161,6 @@ export default function Home() {
 
                       ghostEl.style.left = `${x}px`;
                       ghostEl.style.top = `${y}px`;
-
-                      // TODO
-                      // document.elementFromPoint(x, y);
                     }
                   };
 
@@ -155,6 +168,7 @@ export default function Home() {
                     <TableCell
                       key={YI}
                       data-id={ID}
+                      data-uid={d}
                       draggable
                       ref={ref}
                       sx={{
