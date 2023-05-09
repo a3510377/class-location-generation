@@ -1,8 +1,0 @@
-{
-  "folders": [
-    { "name": "control-panel", "path": "." },
-    { "name": "web", "path": "web" },
-    { "name": "backend", "path": "backend" }
-  ],
-  "settings": { "git.ignoreLimitWarning": true }
-}
