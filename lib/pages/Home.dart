@@ -11,6 +11,23 @@ class _HomePageState extends State<HomePage> {
   int selectedIndex = 0;
   late PageController _pageController;
 
+  static const List<Widget> pages = [
+    TestPage(),
+    TestPage2(),
+  ];
+  static const List<NavigationRailDestination> navItems = [
+    NavigationRailDestination(
+      icon: Icon(Icons.home_outlined),
+      selectedIcon: Icon(Icons.home_rounded),
+      label: Text("test"),
+    ),
+    NavigationRailDestination(
+      icon: Icon(Icons.home_outlined),
+      selectedIcon: Icon(Icons.home_rounded),
+      label: Text("test2"),
+    ),
+  ];
+
   _HomePageState() {
     _pageController = PageController(initialPage: selectedIndex);
   }
@@ -30,10 +47,9 @@ class _HomePageState extends State<HomePage> {
             NavigationRail(
               selectedIndex: selectedIndex,
               groupAlignment: 0,
-              labelType: NavigationRailLabelType.all,
+              labelType: NavigationRailLabelType.selected,
               onDestinationSelected: (index) {
                 setState(() {
-                  selectedIndex = index;
                   _pageController.animateToPage(
                     index,
                     duration: const Duration(milliseconds: 10),
@@ -41,18 +57,9 @@ class _HomePageState extends State<HomePage> {
                   );
                 });
               },
-              destinations: const [
-                NavigationRailDestination(
-                  icon: Icon(Icons.home_outlined),
-                  selectedIcon: Icon(Icons.home_rounded),
-                  label: Text("test"),
-                ),
-                NavigationRailDestination(
-                  icon: Icon(Icons.home_outlined),
-                  selectedIcon: Icon(Icons.home_rounded),
-                  label: Text("test2"),
-                ),
-              ],
+              destinations: navItems,
+              backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+              minWidth: 10,
             ),
             Expanded(
               child: PageView(
@@ -60,10 +67,7 @@ class _HomePageState extends State<HomePage> {
                 controller: _pageController,
                 onPageChanged: (index) => setState(() => selectedIndex = index),
                 padEnds: false,
-                children: const [
-                  TestPage(),
-                  TestPage2(),
-                ],
+                children: pages,
               ),
             )
           ],
