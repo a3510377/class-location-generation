@@ -46,7 +46,8 @@ class _HomePageState extends State<HomePage> {
           children: [
             NavigationRail(
               selectedIndex: selectedIndex,
-              groupAlignment: 0,
+              minWidth: 65,
+              groupAlignment: Alignment.center.x,
               labelType: NavigationRailLabelType.selected,
               onDestinationSelected: (index) {
                 setState(() {
@@ -59,8 +60,8 @@ class _HomePageState extends State<HomePage> {
               },
               destinations: navItems,
               backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-              minWidth: 10,
             ),
+            const VerticalDivider(thickness: 1, width: 1),
             Expanded(
               child: PageView(
                 scrollDirection: Axis.vertical,
@@ -69,7 +70,7 @@ class _HomePageState extends State<HomePage> {
                 padEnds: false,
                 children: pages,
               ),
-            )
+            ),
           ],
         ),
       ),
