@@ -2,9 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'pages/Home.dart';
 
-void main() {
-  runApp(const App());
-}
+main() => runApp(const App());
 
 class App extends StatelessWidget {
   const App({super.key});
