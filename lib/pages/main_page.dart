@@ -17,18 +17,20 @@ class _HomePageState extends State<HomePage> {
   ];
   static const List<NavigationRailDestination> navItems = [
     NavigationRailDestination(
-      icon: Icon(Icons.home_outlined),
-      selectedIcon: Icon(Icons.home_rounded),
-      label: Text("test"),
+      icon: Icon(Icons.shuffle),
+      selectedIcon: Icon(Icons.shuffle_rounded),
+      label: Text("隨機生成"),
     ),
     NavigationRailDestination(
-      icon: Icon(Icons.home_outlined),
-      selectedIcon: Icon(Icons.home_rounded),
-      label: Text("test2"),
+      icon: Icon(Icons.settings),
+      selectedIcon: Icon(Icons.settings_rounded),
+      label: Text("選擇模板"),
     ),
   ];
 
-  _HomePageState() {
+  @override
+  void initState() {
+    super.initState();
     _pageController = PageController(initialPage: selectedIndex);
   }
 
