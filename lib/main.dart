@@ -32,19 +32,19 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   final List<List<int?>> memberPos = [
-    [-1, null, null, null, null, null, null],
+    [-1, null, null, null, null, null, -1],
     [1, 1, 1, 1, 1, 1, 1],
     [null, null, null, null, null, null, null],
     [1, null, null, null, null, null, null],
-    [1, null, null, null, null, null, null],
+    [1, null, null, null, null, null, -1],
   ];
-  final Map<int, String> memberNames = {
-    0: "Alice",
-    1: "Bob",
-    2: "Carol",
-    3: "Dave",
-    4: "Eve",
-  };
+  final Map<int, String> memberNames = [
+    "Alice",
+    "Bob",
+    "Carol",
+    "Dave",
+    "Eve",
+  ].asMap();
 
   @override
   Widget build(BuildContext context) {
@@ -56,7 +56,7 @@ class _HomePageState extends State<HomePage> {
             return TableCell(
               verticalAlignment: TableCellVerticalAlignment.fill,
               child: CustomPaint(
-                painter: DiagonalPainter(color: Colors.red),
+                painter: DiagonalPainter(color: Colors.black),
                 child: const SizedBox(width: 100, height: 100),
               ),
             );
@@ -65,13 +65,26 @@ class _HomePageState extends State<HomePage> {
           return Center(
             child: Column(
               children: [
-                Text(
-                  memberNames[e] ?? "",
-                  style: const TextStyle(decoration: TextDecoration.none),
+                Padding(
+                  padding: const EdgeInsets.only(top: 4),
+                  child: Text(
+                    memberNames[e] ?? "",
+                    style: const TextStyle(
+                      decoration: TextDecoration.none,
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                 ),
-                Text(
-                  memberNames[e] ?? "",
-                  style: const TextStyle(decoration: TextDecoration.none),
+                Padding(
+                  padding: const EdgeInsets.all(10),
+                  child: Text(
+                    memberNames[e] ?? "",
+                    style: const TextStyle(
+                      decoration: TextDecoration.none,
+                      fontSize: 20,
+                    ),
+                  ),
                 )
               ],
             ),
@@ -82,7 +95,9 @@ class _HomePageState extends State<HomePage> {
 
     return Scaffold(
       body: Center(
-        child: Expanded(
+        child: Container(
+          constraints: const BoxConstraints(maxWidth: 900),
+          alignment: Alignment.center,
           child: Table(
             border: TableBorder.all(width: 2),
             defaultVerticalAlignment: TableCellVerticalAlignment.middle,
