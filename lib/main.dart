@@ -31,62 +31,63 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  final List<List<int?>> memberPos = [
+  List<List<int?>> memberPos = [
     [-1, null, null, null, null, null, -1],
-    [1, 1, 1, 1, 1, 1, 1],
     [null, null, null, null, null, null, null],
-    [1, null, null, null, null, null, null],
-    [1, null, null, null, null, null, -1],
+    [null, null, null, null, null, null, null],
+    [null, null, null, null, null, null, null],
+    [null, null, null, null, null, null, -1],
   ];
-  final Map<int, String> memberNames = [
-    "Alice",
-    "Bob",
-    "Carol",
-    "Dave",
-    "Eve",
-  ].asMap();
+  Map<int, String> memberNames = [""].asMap();
 
   @override
   Widget build(BuildContext context) {
     List<TableRow> rows = [];
+
     for (final rowData in memberPos) {
       rows.add(TableRow(
         children: rowData.map((e) {
           if (e == -1) {
-            return TableCell(
-              verticalAlignment: TableCellVerticalAlignment.fill,
-              child: CustomPaint(
-                painter: DiagonalPainter(color: Colors.black),
-                child: const SizedBox(width: 100, height: 100),
+            return Container(
+              constraints: const BoxConstraints(minHeight: 120),
+              child: TableCell(
+                verticalAlignment: TableCellVerticalAlignment.fill,
+                child: CustomPaint(
+                  painter: DiagonalPainter(color: Colors.black),
+                  child: const SizedBox(width: 100, height: 100),
+                ),
               ),
             );
           }
 
-          return Center(
-            child: Column(
-              children: [
-                Padding(
-                  padding: const EdgeInsets.only(top: 4),
-                  child: Text(
-                    memberNames[e] ?? "",
-                    style: const TextStyle(
-                      decoration: TextDecoration.none,
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
+          return Container(
+            constraints: const BoxConstraints(minHeight: 120),
+            child: Center(
+              child: Column(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.only(top: 4),
+                    child: Text(
+                      memberNames[e] ?? "",
+                      style: const TextStyle(
+                        decoration: TextDecoration.none,
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.all(10),
-                  child: Text(
-                    memberNames[e] ?? "",
-                    style: const TextStyle(
-                      decoration: TextDecoration.none,
-                      fontSize: 20,
+                  Padding(
+                    padding: const EdgeInsets.all(10),
+                    child: Text(
+                      memberNames[e] ?? "",
+                      style: const TextStyle(
+                        decoration: TextDecoration.none,
+                        fontSize: 20,
+                      ),
                     ),
-                  ),
-                )
-              ],
+                  )
+                ],
+              ),
             ),
           );
         }).toList(),
@@ -96,11 +97,11 @@ class _HomePageState extends State<HomePage> {
     return Scaffold(
       body: Center(
         child: Container(
-          constraints: const BoxConstraints(maxWidth: 900),
+          constraints: const BoxConstraints(maxWidth: 2000),
+          padding: const EdgeInsets.all(45),
           alignment: Alignment.center,
           child: Table(
             border: TableBorder.all(width: 2),
-            defaultVerticalAlignment: TableCellVerticalAlignment.middle,
             children: rows,
           ),
         ),
