@@ -64,7 +64,7 @@ export async function main() {
     clients[id.toString()] = res;
 
     res.write('event: connect\n');
-    res.write('data: {}\n\n');
+    res.write('data:\n\n');
 
     req.on('close', () => {
       delete clients[id.toString()];
