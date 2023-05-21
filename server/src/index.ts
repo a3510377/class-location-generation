@@ -52,7 +52,7 @@ export async function main() {
     });
 
     const id = new ID();
-    res.write('retry: 10000\n\n');
+    res.write('retry: 1000\n\n');
     clients[id.toString()] = res;
 
     res.write('event: connect\n');

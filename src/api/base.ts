@@ -7,7 +7,7 @@ export class Client extends EventEmitter<EventMap> {
   constructor() {
     super();
 
-    this.conn = new EventSource(`${import.meta.env.VITE_API_URL}/message`);
+    this.conn = new EventSource('/api/message');
 
     this.conn.addEventListener('open', this.emit.bind(this, 'connect'));
     this.conn.addEventListener('setPos', this._onSetPos.bind(this));
