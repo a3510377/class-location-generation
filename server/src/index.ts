@@ -8,15 +8,21 @@ import { Client, Events, GatewayIntentBits } from 'discord.js';
 
 import ID from './service/id';
 
-const bot = new Client({ intents: [GatewayIntentBits.MessageContent] });
+dotenv.config();
+
+const bot = new Client({
+  intents: [
+    GatewayIntentBits.Guilds,
+    GatewayIntentBits.GuildMessages,
+    GatewayIntentBits.MessageContent,
+  ],
+});
 const PORT = process.env.PORT || 3000;
 const watchChannelID = process.env.WATCH_CHANNEL_ID || '';
 
 process
   .on('uncaughtException', console.error)
   .on('unhandledRejection', console.error);
-
-dotenv.config();
 
 export async function main() {
   const app = express();
@@ -31,14 +37,16 @@ export async function main() {
     .use(bodyParser.json())
     .use(bodyParser.urlencoded({ extended: true }));
 
-  bot.on(Events.ClientReady, () => console.log(`Logged in as ${bot.user}`));
+  bot.on(Events.ClientReady, () => {
+    console.log(`Logged in as ${bot.user?.tag}`);
+  });
   bot.on(Events.MessageCreate, ({ channelId, content }) => {
     if (channelId !== watchChannelID) return;
 
     if (/(\d+)-(\d+)(:(\d+))?/.test(content)) {
       Object.values(clients).forEach((client) => {
-        client.send('event: setPos\n');
-        client.send(`data: ${content}\n\n`);
+        client.write('event: setPos\n');
+        client.write(`data: ${content}\n\n`);
       });
     }
   });
@@ -65,6 +73,7 @@ export async function main() {
     });
   });
 
+  bot.login(process.env.BOT_TOKEN);
   app.listen(PORT, () => {
     console.log(`[server]: Server is running at http://localhost:${PORT}`);
   });
