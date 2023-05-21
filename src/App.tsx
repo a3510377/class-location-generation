@@ -1,15 +1,24 @@
-import { useSyncExternalStore } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 
 import { Client } from './api/base';
 
 function App() {
-  const client = new Client();
-  const data = useSyncExternalStore(
-    client.subscribe.bind(client),
-    () => client.data
-  );
+  const client = useMemo(() => new Client(), []);
+  const [data, setData] = useState(() => [...client.data]);
 
-  return <div>{data}</div>;
+  client.on('change', (data) => setData([...data]));
+
+  return (
+    <div>
+      {data.map((s, i) => (
+        <div key={i}>
+          {(s || []).map((d, i) => (
+            <div key={i}>{d}</div>
+          ))}
+        </div>
+      ))}
+    </div>
+  );
 }
 
 export default App;

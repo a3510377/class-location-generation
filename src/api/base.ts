@@ -9,7 +9,7 @@ export class Client extends EventEmitter<EventMap> {
 
     this.conn = new EventSource('/api/message');
 
-    this.conn.addEventListener('open', this.emit.bind(this, 'connect'));
+    this.conn.addEventListener('open', () => this.emit('connect'));
     this.conn.addEventListener('setPos', this._onSetPos.bind(this));
   }
 
@@ -19,14 +19,9 @@ export class Client extends EventEmitter<EventMap> {
     if (x && y) {
       this.data[+x] ||= [];
       this.data[+x][+y] = userID ? +userID : void 0;
+
       this.emit('change', this.data);
     }
-  }
-
-  subscribe(callback: () => void) {
-    this.on('change', callback);
-
-    return () => this.off('change', callback);
   }
 }
 
