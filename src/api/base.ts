@@ -11,6 +11,7 @@ export class Client extends EventEmitter<EventMap> {
 
     this.conn.addEventListener('open', () => this.emit('connect'));
     this.conn.addEventListener('setPos', this._onSetPos.bind(this));
+    this.conn.addEventListener('reset', this.setData.bind(null, []));
   }
 
   _onSetPos({ data }: MessageEvent<string>) {
@@ -20,8 +21,13 @@ export class Client extends EventEmitter<EventMap> {
       this.data[+x] ||= [];
       this.data[+x][+y] = userID ? +userID : void 0;
 
-      this.emit('change', this.data);
+      this.setData(this.data);
     }
+  }
+
+  setData(data: (number | undefined)[][]) {
+    this.data = data;
+    this.emit('change', this.data);
   }
 }
 
