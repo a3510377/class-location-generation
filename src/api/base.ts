@@ -1,72 +1,36 @@
-import { EventEmitter } from 'events';
+import { EventEmitter } from 'eventemitter3';
 
-export class Client extends EventEmitter {
+export class Client extends EventEmitter<EventMap> {
   conn: EventSource;
   data: (number | undefined)[][] = [];
 
   constructor() {
     super();
-    this.conn = new EventSource(import.meta.env.API_URL);
 
-    this.conn.addEventListener('open', this.emit.bind(null, 'connect'));
-    this.conn.addEventListener('message', this._onMessage.bind(this));
+    this.conn = new EventSource(`${import.meta.env.VITE_API_URL}/message`);
+
+    this.conn.addEventListener('open', this.emit.bind(this, 'connect'));
+    this.conn.addEventListener('setPos', this._onSetPos.bind(this));
   }
 
-  _onMessage(msg: MessageEvent<RawData<keyof RawEventData>>) {
-    const {
-      data: { event, data },
-    } = msg;
+  _onSetPos({ data }: MessageEvent<string>) {
+    const [, x, y, , userID] = data.match(/(\d+)-(\d+)(:(\d+))?/) || [];
 
-    switch (event) {
-      case 'setPos': {
-        const value = data as RawEventData['setPos'];
-
-        const [, x, y, , userID] = value.match(/(\d+)-(\d+)(:(\d+))?/) || [];
-        this.data[+x] ||= [];
-        this.data[+x][+y] = userID ? +userID : void 0;
-
-        break;
-      }
-      case 'newUser':
-        break;
+    if (x && y) {
+      this.data[+x] ||= [];
+      this.data[+x][+y] = userID ? +userID : void 0;
+      this.emit('change', this.data);
     }
+  }
+
+  subscribe(callback: () => void) {
+    this.on('change', callback);
+
+    return () => this.off('change', callback);
   }
 }
 
 export interface EventMap {
   connect: [];
-}
-
-export interface RawEventData {
-  setPos: `${number}-${number}:${number}` | `${number}-${number}`; // x-y:userID | x-y
-  newUser: { id: string; name: string };
-}
-
-interface RawData<K extends keyof RawEventData> {
-  event: K;
-  data: RawEventData[K];
-}
-
-export interface Client {
-  emit<K extends keyof EventMap>(eventName: K, ...args: EventMap[K]): boolean;
-  addListener<K extends keyof EventMap>(
-    eventName: K,
-    listener: (...args: EventMap[K]) => void
-  ): this;
-  on<K extends keyof EventMap>(
-    event: K,
-    listener: (...args: EventMap[K]) => void
-  ): this;
-  once<K extends keyof EventMap>(
-    eventName: K,
-    listener: (...args: EventMap[K]) => void
-  ): this;
-  removeListener<K extends keyof EventMap>(
-    eventName: K,
-    listener: (...args: EventMap[K]) => void
-  ): this;
-  off<K extends keyof EventMap>(
-    eventName: K,
-    listener: (...args: EventMap[K]) => void
-  ): this;
+  change: [(number | undefined)[][]];
 }
