@@ -83,6 +83,7 @@ export async function main() {
     const id = new ID();
     res.write('retry: 1000\n\n');
     send('connect');
+    send('setup', '7;5');
 
     clients[id.toString()] = res;
     for (const [x, XValue] of Object.entries(cache)) {

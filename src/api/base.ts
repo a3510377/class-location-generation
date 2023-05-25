@@ -11,6 +11,18 @@ export class Client extends EventEmitter<EventMap> {
 
     this.conn.addEventListener('open', () => this.emit('connect'));
     this.conn.addEventListener('setPos', this._onSetPos.bind(this));
+    this.conn.addEventListener('setup', ({ data }: MessageEvent<string>) => {
+      const [x, y] = data.split(';');
+      if (x && y) {
+        Object.assign(
+          this.data,
+          Array.from(Array.from({ length: +x }), () =>
+            Array.from({ length: +y })
+          )
+        );
+        this.emit('change', this.data);
+      }
+    });
     this.conn.addEventListener('reset', this.setData.bind(null, []));
   }
 

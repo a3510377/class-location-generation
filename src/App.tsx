@@ -1,6 +1,8 @@
 import { useState, useMemo } from 'react';
 
 import { Client } from './api/base';
+import Grid from '@mui/material/Unstable_Grid2';
+import { Box, Stack } from '@mui/material';
 
 function App() {
   const client = useMemo(() => new Client(), []);
@@ -9,15 +11,19 @@ function App() {
   client.on('change', (data) => setData([...data]));
 
   return (
-    <div>
+    <Grid container>
       {data.map((s, i) => (
-        <div key={i}>
-          {(s || []).map((d, i) => (
-            <div key={i}>{d}</div>
-          ))}
-        </div>
+        <Grid>
+          <Stack key={i}>
+            {(s || []).map((d, i) => (
+              <Box height={10} key={i}>
+                {d}
+              </Box>
+            ))}
+          </Stack>
+        </Grid>
       ))}
-    </div>
+    </Grid>
   );
 }
 
