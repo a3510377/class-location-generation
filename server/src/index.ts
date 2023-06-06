@@ -40,7 +40,6 @@ export async function main() {
       'http://localhost:5173',
       'https://a3510377.github.io',
     ],
-    credentials: true,
   };
   const app = express();
   const httpServer = createServer(app);
