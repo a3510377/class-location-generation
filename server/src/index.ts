@@ -110,6 +110,10 @@ export async function main() {
           }
         }
         send('set', cache);
+      } else if (/(\d+)-(\d+)(:(\d+))?/.test(content)) {
+        [...content.matchAll(/(\d+)-(\d+)(:(\d+))?/gm)].forEach(
+          ([, x, y, , userID]) => setCatch(+x - 1, +y - 1, userID)
+        );
       } else if (/(\d+)(:(\d+))?/.test(content)) {
         [...content.matchAll(/(\d+)(:(\d+))?/gm)].forEach(
           ([, _id, , userID]) => {
@@ -117,10 +121,6 @@ export async function main() {
 
             setCatch(+x - 1, +y - 1, userID);
           }
-        );
-      } else if (/(\d+)-(\d+)(:(\d+))?/.test(content)) {
-        [...content.matchAll(/(\d+)-(\d+)(:(\d+))?/gm)].forEach(
-          ([, x, y, , userID]) => setCatch(+x - 1, +y - 1, userID)
         );
       }
     });
