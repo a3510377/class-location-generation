@@ -14,9 +14,7 @@ function App() {
   const baseFont = { fontSize: { sm: '14pt', md: '16pt', lg: '18pt' } };
 
   useEffect(() => {
-    const socket = io(import.meta.env.VITE_API_URL, {
-      withCredentials: true,
-    });
+    const socket = io(import.meta.env.VITE_API_URL);
     socket.connect();
     socket.on('set', (data) => setData(data));
 
