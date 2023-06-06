@@ -58,7 +58,15 @@ export async function main() {
 
   app
     .set('PORT', PORT)
-    .use(cors({ origin: ['http://localhost:3000', 'http://localhost:5173'] }))
+    .use(
+      cors({
+        origin: [
+          'http://localhost:3000',
+          'http://localhost:5173',
+          'https://a3510377.github.io/',
+        ],
+      })
+    )
     .use(compression())
     .use(morgan('dev'))
     .use(bodyParser.json())
