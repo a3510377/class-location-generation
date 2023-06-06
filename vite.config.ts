@@ -3,6 +3,7 @@ import react from '@vitejs/plugin-react-swc';
 
 // https://vitejs.dev/config/
 export default defineConfig({
+  base: '/class-location-generation',
   plugins: [react()],
   server: {
     port: 3000,
