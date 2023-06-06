@@ -1,3 +1,4 @@
+import fs from 'fs';
 import dotenv from 'dotenv';
 import morgan from 'morgan';
 import express, { Response } from 'express';
@@ -24,14 +25,36 @@ process
   .on('uncaughtException', console.error)
   .on('unhandledRejection', console.error);
 
+interface PosData {
+  id: number;
+  name: string;
+}
+
+type CacheType = (PosData | undefined)[][];
+
+const save = (users: string[], cache: CacheType) => {
+  fs.writeFileSync('data.json', JSON.stringify({ users, cache }));
+};
+
 export async function main() {
   const app = express();
   const clients: Record<string, Response> = {};
-  const cache: (number | undefined)[][] = [];
+  let cache: CacheType = Array.from({ length: 7 }).map(() =>
+    Array.from({ length: 5 })
+  );
+  let users: string[] = [];
+
+  try {
+    const data = fs.readFileSync('data.json', 'utf-8');
+    const { cache: _cache, users: _users } = JSON.parse(data);
+
+    cache = _cache;
+    users = _users;
+    // eslint-disable-next-line no-empty
+  } catch {}
 
   app
     .set('PORT', PORT)
-    .set('client', clients)
     .use(cors({ origin: ['http://localhost:3000', 'http://localhost:5173'] }))
     .use(compression())
     .use(morgan('dev'))
@@ -39,6 +62,8 @@ export async function main() {
     .use(bodyParser.urlencoded({ extended: true }));
 
   const send = (eventName: string, data: unknown = '') => {
+    if (eventName === 'set') save(users, cache);
+
     Object.values(clients).forEach((client) => {
       client.write(`event: ${eventName}\n`);
       client.write(
@@ -51,26 +76,37 @@ export async function main() {
     });
   };
 
-  const sendPos = (x: number, y: number, pos?: number) => {
-    cache[x] ||= [];
-    cache[x][y] = pos ? pos : void 0;
+  bot
+    .on(Events.ClientReady, () => console.log(`Logged in as ${bot.user?.tag}`))
+    .on(Events.MessageCreate, ({ channelId, content }) => {
+      if (channelId !== watchChannelID) return;
 
-    send('setPos', `${x}-${y}${pos ? `:${pos}` : ''}`);
-  };
+      if (content.startsWith('set_user')) {
+        const data = content.split('\n');
+        data.shift();
 
-  bot.on(Events.ClientReady, () => {
-    console.log(`Logged in as ${bot.user?.tag}`);
-  });
-  bot.on(Events.MessageCreate, ({ channelId, content }) => {
-    if (channelId !== watchChannelID) return;
+        users = data;
+        for (const XData of cache) {
+          for (const YData of XData) {
+            if (YData) YData.name = users[YData.id - 1];
+          }
+        }
+        send('set', cache);
+      } else if (/(\d+)-(\d+)(:(\d+))?/.test(content)) {
+        [...content.matchAll(/(\d+)-(\d+)(:(\d+))?/gm)].forEach(
+          ([, _x, _y, , userID]) => {
+            const [x, y] = [+_x - 1, +_y - 1];
 
-    if (content === 'reset') send('reset');
-    else if (/(\d+)-(\d+)(:(\d+))?/.test(content)) {
-      const [, x, y, , userID] = content.match(/(\d+)-(\d+)(:(\d+))?/) || [];
+            cache[x] ||= [];
+            cache[x][y] = userID
+              ? { id: +userID, name: users[+userID - 1] }
+              : void 0;
 
-      if (x && y) sendPos(+x, +y, userID ? +userID : void 0);
-    }
-  });
+            send('set', cache);
+          }
+        );
+      }
+    });
 
   app.get('/message', (req, res) => {
     res.writeHead(200, {
@@ -83,12 +119,9 @@ export async function main() {
     const id = new ID();
     res.write('retry: 1000\n\n');
     send('connect');
-    send('setup', '7;5');
+    send('set', cache);
 
     clients[id.toString()] = res;
-    for (const [x, XValue] of Object.entries(cache)) {
-      for (const [y, YValue] of Object.entries(XValue)) sendPos(+x, +y, YValue);
-    }
 
     req.on('close', () => {
       delete clients[id.toString()];
