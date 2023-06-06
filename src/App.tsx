@@ -7,6 +7,7 @@ import { Box, Stack } from '@mui/material';
 function App() {
   const client = new Client();
   const [data, setData] = useState<typeof client.data>(() => []);
+  const baseFont = { fontSize: { sm: '14pt', md: '16pt', lg: '18pt' } };
 
   client.on('change', (data) => setData([...data]));
 
@@ -33,12 +34,12 @@ function App() {
           '--Grid-borderWidth': '1px',
           borderTop: 'var(--Grid-borderWidth) solid',
           borderLeft: 'var(--Grid-borderWidth) solid',
-          borderColor: 'divider',
+          borderColor: 'cadetblue',
           '& > div, & > div > div': {
             height: '100%',
             borderRight: 'var(--Grid-borderWidth) solid',
             borderBottom: 'var(--Grid-borderWidth) solid',
-            borderColor: 'divider',
+            borderColor: 'cadetblue',
           },
           '& > div > div': {
             display: 'flex',
@@ -53,17 +54,15 @@ function App() {
               YData ? (
                 <Stack key={y}>
                   <Box
-                    sx={{ fontSize: { sm: '18pt', md: '20pt' } }}
+                    sx={{ fontSize: { sm: '16pt', md: '18pt', lg: '20pt' } }}
                     paddingBottom="4px"
                   >
                     {YData?.id}
                   </Box>
-                  <Box sx={{ fontSize: { sm: '16pt', md: '18pt' } }}>
-                    {YData?.name}
-                  </Box>
+                  <Box sx={baseFont}>{YData?.name}</Box>
                 </Stack>
               ) : (
-                <Box sx={{ fontSize: { sm: '16pt', md: '18pt' } }}>無</Box>
+                <Box sx={baseFont}>無</Box>
               )
             )}
           </Grid2>
