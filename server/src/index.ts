@@ -1,13 +1,14 @@
 import fs from 'fs';
 import dotenv from 'dotenv';
 import morgan from 'morgan';
-import express, { Response } from 'express';
-import cors from 'cors';
+import express from 'express';
+import cors, { CorsOptions } from 'cors';
 import bodyParser from 'body-parser';
 import compression from 'compression';
+import { Server } from 'socket.io';
 import { Client, Events, GatewayIntentBits } from 'discord.js';
 
-import ID from './service/id';
+import { createServer } from 'http';
 
 dotenv.config();
 
@@ -33,8 +34,17 @@ interface PosData {
 type CacheType = (PosData | undefined)[][];
 
 export async function main() {
+  const corsOptions: CorsOptions = {
+    origin: [
+      'http://localhost:3000',
+      'http://localhost:5173',
+      'https://a3510377.github.io',
+    ],
+  };
   const app = express();
-  const clients: Record<string, Response> = {};
+  const httpServer = createServer(app);
+  const io = new Server(httpServer, { cors: corsOptions });
+
   let simpleMap: string[] = [];
   let cache: CacheType = Array.from({ length: 7 }).map(() =>
     Array.from({ length: 5 })
@@ -58,15 +68,7 @@ export async function main() {
 
   app
     .set('PORT', PORT)
-    .use(
-      cors({
-        origin: [
-          'http://localhost:3000',
-          'http://localhost:5173',
-          'https://a3510377.github.io/',
-        ],
-      })
-    )
+    .use(cors(corsOptions))
     .use(compression())
     .use(morgan('dev'))
     .use(bodyParser.json())
@@ -75,16 +77,7 @@ export async function main() {
   const send = (eventName: string, data: unknown = '') => {
     if (eventName === 'set') save();
 
-    Object.values(clients).forEach((client) => {
-      client.write(`event: ${eventName}\n`);
-      client.write(
-        `data: ${
-          ['string', 'number', 'bigint'].includes(typeof data)
-            ? data
-            : JSON.stringify(data)
-        }\n\n`
-      );
-    });
+    io.emit('set', data);
   };
   const setCatch = (x: number, y: number, userID: string) => {
     cache[x] ||= [];
@@ -133,30 +126,10 @@ export async function main() {
       }
     });
 
-  app.get('/message', (req, res) => {
-    res.writeHead(200, {
-      'Content-Type': 'text/event-stream',
-      'Cache-Control': 'no-cache, no-transform',
-      'X-Accel-Buffering': 'no',
-      Connection: 'keep-alive',
-    });
-
-    const id = new ID();
-    res.write('retry: 1000\n\n');
-    send('connect');
-    send('set', cache);
-
-    clients[id.toString()] = res;
-
-    req.on('close', () => {
-      delete clients[id.toString()];
-
-      console.log(`${id} close`);
-    });
-  });
+  io.on('connection', (socket) => socket.emit('set', cache));
 
   bot.login(process.env.BOT_TOKEN);
-  app.listen(PORT, () => {
+  httpServer.listen(PORT, () => {
     console.log(`[server]: Server is running at http://localhost:${PORT}`);
   });
 }

@@ -1,15 +1,27 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
-import { Client } from './base';
 import Grid2 from '@mui/material/Unstable_Grid2/Grid2';
 import { Box, Stack } from '@mui/material';
+import { io } from 'socket.io-client';
+
+export interface PosData {
+  id: number;
+  name: string;
+}
 
 function App() {
-  const client = new Client();
-  const [data, setData] = useState<typeof client.data>(() => []);
+  const [data, setData] = useState<(PosData | undefined)[][]>(() => []);
   const baseFont = { fontSize: { sm: '14pt', md: '16pt', lg: '18pt' } };
 
-  client.on('change', (data) => setData([...data]));
+  useEffect(() => {
+    const socket = io(import.meta.env.VITE_API_URL);
+    socket.connect();
+    socket.on('set', (data) => setData(data));
+
+    return () => {
+      socket.disconnect();
+    };
+  }, []);
 
   return (
     <>
@@ -62,7 +74,9 @@ function App() {
                   <Box sx={baseFont}>{YData?.name}</Box>
                 </Stack>
               ) : (
-                <Box sx={baseFont}>無</Box>
+                <Box key={y} sx={baseFont}>
+                  無
+                </Box>
               )
             )}
           </Grid2>
