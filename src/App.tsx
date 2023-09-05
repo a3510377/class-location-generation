@@ -5,8 +5,9 @@ import { Box, Stack } from '@mui/material';
 import { io } from 'socket.io-client';
 
 export interface PosData {
-  id: number;
-  name: string;
+  id?: number;
+  name?: string;
+  simPosID: number;
 }
 
 function App() {
@@ -64,7 +65,7 @@ function App() {
           <Grid2 key={x} component={Stack} xs={1}>
             {XData.map((YData, y) =>
               YData ? (
-                <Stack key={y}>
+                <Stack key={y} sx={{ position: 'relative' }}>
                   <Box
                     sx={{ fontSize: { sm: '16pt', md: '18pt', lg: '20pt' } }}
                     paddingBottom="4px"
@@ -72,6 +73,9 @@ function App() {
                     {YData?.id}
                   </Box>
                   <Box sx={baseFont}>{YData?.name}</Box>
+                  <Box sx={{ position: 'absolute', bottom: 4, right: 6 }}>
+                    {YData.simPosID + 1}
+                  </Box>
                 </Stack>
               ) : (
                 <Box key={y} sx={baseFont}>
