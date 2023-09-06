@@ -74,7 +74,18 @@ function App() {
                   </Box>
                   <Box sx={baseFont}>{YData?.name}</Box>
                   {YData.simPosID !== void 0 && (
-                    <Box sx={{ position: 'absolute', bottom: 4, right: 6 }}>
+                    <Box
+                      sx={{
+                        position: 'absolute',
+                        bottom: 4,
+                        right: 6,
+                        fontSize: {
+                          sm: '12pt',
+                          md: '14pt',
+                          lg: '16pt',
+                        },
+                      }}
+                    >
                       {YData.simPosID + 1}
                     </Box>
                   )}
