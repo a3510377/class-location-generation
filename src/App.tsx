@@ -7,7 +7,7 @@ import { io } from 'socket.io-client';
 export interface PosData {
   id?: number;
   name?: string;
-  simPosID: number;
+  simPosID?: number;
 }
 
 function App() {
@@ -73,9 +73,11 @@ function App() {
                     {YData?.id}
                   </Box>
                   <Box sx={baseFont}>{YData?.name}</Box>
-                  <Box sx={{ position: 'absolute', bottom: 4, right: 6 }}>
-                    {YData.simPosID + 1}
-                  </Box>
+                  {YData.simPosID !== void 0 && (
+                    <Box sx={{ position: 'absolute', bottom: 4, right: 6 }}>
+                      {YData.simPosID + 1}
+                    </Box>
+                  )}
                 </Stack>
               ) : (
                 <Box key={y} sx={baseFont}>
