@@ -29,7 +29,7 @@ function App() {
 
   const download = async () => {
     const template = await axios
-      .get(`${import.meta.env.BASE_URL}/assets/template.zip`, {
+      .get(`${import.meta.env.BASE_URL}/assets/template.docx`, {
         responseType: 'blob',
       })
       .then(({ data }) => data);
