@@ -13,8 +13,11 @@ export interface PosData {
   simPosID?: number;
 }
 
+export type PosDataList = (PosData | undefined)[][];
+
 function App() {
-  const [data, setData] = useState<(PosData | undefined)[][]>(() => []);
+  const [data, setData] = useState<PosDataList>(() => []);
+  const [catchData, setCatchData] = useState<number[]>(() => []);
   const baseFont = { fontSize: { sm: '14pt', md: '16pt', lg: '18pt' } };
 
   useEffect(() => {
@@ -26,6 +29,17 @@ function App() {
       socket.disconnect();
     };
   }, []);
+  useEffect(() => {
+    if (!data.length) return;
+
+    setCatchData(
+      data
+        .reduce((a, b) => a.concat(b))
+        .filter(Boolean)
+        .map((d) => d?.id as number)
+        .filter((value, _, list) => list.filter((c) => c === value).length > 1)
+    );
+  }, [data]);
 
   const download = async () => {
     const template = await axios
@@ -108,7 +122,16 @@ function App() {
           <Grid2 key={x} component={Stack} xs={1}>
             {XData.map((YData, y) =>
               YData ? (
-                <Stack key={y} sx={{ position: 'relative' }}>
+                <Stack
+                  key={y}
+                  sx={{
+                    position: 'relative',
+                    ...(catchData.includes(YData.id as number) && {
+                      color: 'red',
+                      fontWeight: 'bold',
+                    }),
+                  }}
+                >
                   <Box
                     sx={{ fontSize: { sm: '16pt', md: '18pt', lg: '20pt' } }}
                     paddingBottom="4px"
@@ -122,11 +145,7 @@ function App() {
                         position: 'absolute',
                         bottom: 4,
                         right: 6,
-                        fontSize: {
-                          sm: '12pt',
-                          md: '14pt',
-                          lg: '16pt',
-                        },
+                        fontSize: { sm: '12pt', md: '14pt', lg: '16pt' },
                       }}
                     >
                       {YData.simPosID + 1}
