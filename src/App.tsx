@@ -13,6 +13,16 @@ export interface PosData {
   simPosID?: number;
 }
 
+// 號碼 {{\d-\d}}
+// 姓名 {{\d_\d}}
+const config = {
+  Y: '112', // {{Y}}年度
+  N: '2', // 第{{N}}學期
+  C: '電子二忠', // 班級: {{C}}
+  L: '33', // 班級學生總人數：{{L}}員
+  T: '劉美惠', // 導師：{{T}}
+};
+
 export type PosDataList = (PosData | undefined)[][];
 
 function App() {
@@ -53,11 +63,11 @@ function App() {
       (await zip.file('word/document.xml')?.async('string')) || '';
 
     let newDocument = templateDocument
-      .replaceAll('{{Y}}', '112')
-      .replaceAll('{{N}}', '2')
-      .replaceAll('{{C}}', '電子二忠')
-      .replaceAll('{{L}}', '33')
-      .replaceAll('{{T}}', '劉美惠');
+      .replaceAll('{{Y}}', config.Y)
+      .replaceAll('{{N}}', config.N)
+      .replaceAll('{{C}}', config.C)
+      .replaceAll('{{L}}', config.L)
+      .replaceAll('{{T}}', config.T);
 
     data.forEach((list, x) => {
       x++;
@@ -77,7 +87,10 @@ function App() {
     );
 
     zip.generateAsync({ type: 'blob' }).then((content) => {
-      saveAs(content, 'example.docx');
+      saveAs(
+        content,
+        `${config.C}${config.Y}學年度第${config.N}學期班級座位表.docx`
+      );
     });
   };
 
