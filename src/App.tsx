@@ -3,6 +3,9 @@ import { useEffect, useState } from 'react';
 import Grid2 from '@mui/material/Unstable_Grid2/Grid2';
 import { Box, Stack } from '@mui/material';
 import { io } from 'socket.io-client';
+import JSZip from 'jszip';
+import axios from 'axios';
+import { saveAs } from 'file-saver';
 
 export interface PosData {
   id?: number;
@@ -23,6 +26,46 @@ function App() {
       socket.disconnect();
     };
   }, []);
+
+  const download = async () => {
+    const template = await axios
+      .get(`${import.meta.env.BASE_URL}/assets/template.zip`, {
+        responseType: 'blob',
+      })
+      .then(({ data }) => data);
+
+    const zip = await JSZip.loadAsync(template);
+    const templateDocument =
+      (await zip.file('word/document.xml')?.async('string')) || '';
+
+    let newDocument = templateDocument
+      .replaceAll('{{Y}}', '112')
+      .replaceAll('{{N}}', '2')
+      .replaceAll('{{C}}', '電子二忠')
+      .replaceAll('{{L}}', '33')
+      .replaceAll('{{T}}', '劉美惠');
+
+    data.forEach((list, x) => {
+      x++;
+      list.forEach((pos, y) => {
+        if (!pos) return;
+        y++;
+
+        newDocument = newDocument
+          .replaceAll(`{{${x}-${y}}}`, (pos.id ?? '').toString())
+          .replaceAll(`{{${x}_${y}}}`, pos.name || '');
+      });
+    });
+
+    zip.file(
+      'word/document.xml',
+      newDocument.replaceAll(/\{\{\d+[-_]\d+\}\}/g, '')
+    );
+
+    zip.generateAsync({ type: 'blob' }).then((content) => {
+      saveAs(content, 'example.docx');
+    });
+  };
 
   return (
     <>
@@ -99,6 +142,15 @@ function App() {
           </Grid2>
         ))}
       </Grid2>
+      <Box
+        sx={{
+          position: 'fixed',
+          bottom: '2em',
+          right: '2em',
+        }}
+      >
+        <button onClick={download}>下載</button>
+      </Box>
     </>
   );
 }
