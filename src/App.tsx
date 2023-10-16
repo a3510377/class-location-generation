@@ -119,7 +119,12 @@ function App() {
         }}
       >
         {data.map((XData, x) => (
-          <Grid2 key={x} component={Stack} xs={1}>
+          <Grid2
+            key={x}
+            component={Stack}
+            xs={1}
+            mx={{ border: 'none!important' }}
+          >
             {XData.map((YData, y) =>
               YData ? (
                 <Stack
