@@ -6,7 +6,7 @@ RUN apk add --no-cache --update nodejs yarn
 COPY package.json .
 RUN yarn install --prod
 
-FROM alpine:latest
+FROM builder
 
 WORKDIR /app
 COPY --from=builder /app .
