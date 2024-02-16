@@ -53,7 +53,11 @@ export async function main() {
   let users: string[] = [];
 
   const save = () => {
-    fs.writeFileSync('data.json', JSON.stringify({ users, cache, simpleMap }));
+    fs.mkdirSync('data', { recursive: true });
+    fs.writeFileSync(
+      'data/data.json',
+      JSON.stringify({ users, cache, simpleMap })
+    );
   };
   const updateSimpleMap = (data: string[]) => {
     simpleMap = data;
@@ -70,7 +74,7 @@ export async function main() {
       cache: _cache,
       users: _users,
       simpleMap: _simpleMap,
-    } = JSON.parse(fs.readFileSync('data.json', 'utf-8'));
+    } = JSON.parse(fs.readFileSync('data/data.json', 'utf-8'));
 
     [cache, users, simpleMap] = [_cache, _users, _simpleMap];
     updateSimpleMap(simpleMap);
