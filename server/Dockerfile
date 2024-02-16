@@ -1,12 +1,15 @@
-FROM alpine:latest AS builder
+FROM alpine:latest AS node
+
+RUN apk add --no-cache --update nodejs yarn
+
+FROM node AS builder
 
 WORKDIR /app
-RUN apk add --no-cache --update nodejs yarn
 
 COPY package.json .
 RUN yarn install --prod
 
-FROM builder
+FROM node
 
 WORKDIR /app
 COPY --from=builder /app .
