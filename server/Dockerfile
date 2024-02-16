@@ -1,21 +1,14 @@
-FROM alpine:latest AS node
-
-RUN apk add --no-cache --update nodejs yarn
-
-FROM node AS builder
+FROM node:20
 
 WORKDIR /app
 
-COPY package.json .
-RUN yarn install --prod
+COPY package.json /app
+COPY yarn.lock /app
 
-FROM node
+RUN yarn install
 
-WORKDIR /app
-COPY --from=builder /app .
-COPY . .
-
+COPY . /app
 RUN yarn build
 
-CMD ["yarn", "start"]
+CMD yarn start
 EXPOSE 3000
