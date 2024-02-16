@@ -12,5 +12,7 @@ WORKDIR /app
 COPY --from=builder /app .
 COPY . .
 
+RUN yarn build
+
 CMD ["yarn", "start"]
 EXPOSE 3000
