@@ -27,6 +27,8 @@ export type PosDataList = (PosData | undefined)[][];
 
 function App() {
   const [data, setData] = useState<PosDataList>(() => []);
+  const [users, setUsers] = useState<string[]>(() => []);
+  const [dataUsers, setDataUsers] = useState<string[]>(() => []);
   const [catchData, setCatchData] = useState<number[]>(() => []);
   const baseFont = { fontSize: { sm: '14pt', md: '16pt', lg: '18pt' } };
 
@@ -34,6 +36,7 @@ function App() {
     const socket = io(import.meta.env.VITE_API_URL);
     socket.connect();
     socket.on('set', (data) => setData(data));
+    socket.on('users', (data) => setUsers(data));
 
     return () => {
       socket.disconnect();
@@ -48,6 +51,13 @@ function App() {
         .filter(Boolean)
         .map((d) => d?.id as number)
         .filter((value, _, list) => list.filter((c) => c === value).length > 1)
+    );
+
+    setDataUsers(
+      data
+        .flat()
+        .map((x) => x?.name)
+        .filter(Boolean) as string[]
     );
   }, [data]);
 
@@ -179,14 +189,14 @@ function App() {
           </Grid2>
         ))}
       </Grid2>
-      <Box
-        sx={{
-          position: 'fixed',
-          bottom: '2em',
-          right: '2em',
-        }}
-      >
+      <Box sx={{ position: 'fixed', bottom: '2em', right: '2em' }}>
         <button onClick={download}>下載</button>
+      </Box>
+      <Box>
+        {(users.length - dataUsers.length <= 10
+          ? users.filter((x) => !dataUsers.includes(x))
+          : []
+        ).join(', ')}
       </Box>
     </>
   );

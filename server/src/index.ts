@@ -150,7 +150,10 @@ export async function main() {
       }
     });
 
-  io.on('connection', (socket) => socket.emit('set', getPosCache()));
+  io.on('connection', (socket) => {
+    socket.emit('users', users);
+    socket.emit('set', getPosCache());
+  });
 
   bot.login(process.env.BOT_TOKEN);
   httpServer.listen(PORT, () => {
