@@ -7,6 +7,7 @@ import bodyParser from 'body-parser';
 import compression from 'compression';
 import { Server } from 'socket.io';
 import { Client, Events, GatewayIntentBits } from 'discord.js';
+import diff from 'deep-diff';
 
 import { createServer } from 'http';
 
@@ -38,6 +39,7 @@ export async function main() {
     origin: [
       'http://localhost:3000',
       'http://localhost:5173',
+      'https://monkey-cat.com/',
       'https://a3510377.github.io',
     ],
   };
@@ -61,25 +63,14 @@ export async function main() {
   };
   const updateSimpleMap = (data: string[]) => {
     simpleMap = data;
-    simpleDict = {};
+    const tmp: Record<string, number> = {};
     data.forEach((value, index) => {
-      if (simpleDict[value]) console.log(`simple dict pos repeat ${value}`);
+      if (tmp[value]) console.log(`simple dict pos repeat ${value}`);
 
-      simpleDict[value] = index;
+      tmp[value] = index;
     });
+    simpleDict = tmp;
   };
-
-  try {
-    const {
-      cache: _cache,
-      users: _users,
-      simpleMap: _simpleMap,
-    } = JSON.parse(fs.readFileSync('data/data.json', 'utf-8'));
-
-    [cache, users, simpleMap] = [_cache, _users, _simpleMap];
-    updateSimpleMap(simpleMap);
-    // eslint-disable-next-line no-empty
-  } catch {}
 
   app
     .set('PORT', PORT)
@@ -149,6 +140,35 @@ export async function main() {
         );
       }
     });
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const updata = (data: any) => {
+    try {
+      const { cache: _cache, users: _users, simpleMap: _simpleMap } = data;
+
+      [cache, users, simpleMap] = [_cache, _users, _simpleMap];
+      updateSimpleMap(simpleMap);
+      // eslint-disable-next-line no-empty
+    } catch {}
+
+    io.emit('users', users);
+    io.emit('set', getPosCache());
+  };
+
+  const updateFromFile = () => {
+    const nowData = JSON.parse(fs.readFileSync('data/data.json', 'utf-8'));
+    const differences = diff(nowData, { cache, users, simpleMap });
+    if (differences?.length) {
+      updata(nowData);
+    }
+  };
+
+  fs.watch('data/data.json', (event) => {
+    if (event === 'change') {
+      updateFromFile();
+    }
+  });
+  updateFromFile();
 
   io.on('connection', (socket) => {
     socket.emit('users', users);
