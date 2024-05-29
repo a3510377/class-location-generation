@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react';
 
 import Grid2 from '@mui/material/Unstable_Grid2/Grid2';
-import { Box, Stack } from '@mui/material';
+import { Unstable_Popup as Popup } from '@mui/base/Unstable_Popup';
+
+import { Box, Button, Stack } from '@mui/material';
 import { io } from 'socket.io-client';
 import JSZip from 'jszip';
 import axios from 'axios';
@@ -16,17 +18,19 @@ export interface PosData {
 // 號碼 {{\d-\d}}
 // 姓名 {{\d_\d}}
 const config = {
-  Y: '112', // {{Y}}年度
+  Y: '113', // {{Y}}年度
   N: '二', // 第{{N}}學期
   C: '電子二忠', // 班級: {{C}}
-  L: '33', // 班級學生總人數：{{L}}員
+  L: '32', // 班級學生總人數：{{L}}員
   T: '劉美惠', // 導師：{{T}}
 };
 
 export type PosDataList = (PosData | undefined)[][];
 
 function App() {
+  const [open, setOpen] = useState<boolean>(false);
   const [data, setData] = useState<PosDataList>(() => []);
+  const [changes, setChanges] = useState<string[]>(() => []);
   const [users, setUsers] = useState<string[]>(() => []);
   const [dataUsers, setDataUsers] = useState<string[]>(() => []);
   const [catchData, setCatchData] = useState<number[]>(() => []);
@@ -35,13 +39,51 @@ function App() {
   useEffect(() => {
     const socket = io(import.meta.env.VITE_API_URL);
     socket.connect();
-    socket.on('set', (data) => setData(data));
+
+    socket.on('set', (newData: PosDataList) => {
+      console.log(newData);
+
+      setData((data) => {
+        const newChanges: string[] = [];
+
+        for (let x = 0; x < newData.length; x++) {
+          for (let y = 0; y < newData[x].length; y++) {
+            const oldValue = data?.[x]?.[y];
+            const newValue = newData[x][y];
+
+            if (
+              !oldValue !== !newValue ||
+              oldValue?.id !== newValue?.id ||
+              oldValue?.name !== newValue?.name ||
+              oldValue?.simPosID !== newValue?.simPosID
+            ) {
+              newChanges.push(`${x}-${y}`);
+            }
+          }
+        }
+
+        if (newChanges.length > 0) {
+          setChanges((prevChanges) => [...prevChanges, ...newChanges]);
+
+          for (const change of newChanges) {
+            setTimeout(() => {
+              setChanges((prevChanges) =>
+                prevChanges.splice(prevChanges.indexOf(change), 1)
+              );
+            }, 2e3);
+          }
+        }
+
+        return newData;
+      });
+    });
     socket.on('users', (data) => setUsers(data));
 
     return () => {
       socket.disconnect();
     };
   }, []);
+
   useEffect(() => {
     if (!data.length) return;
 
@@ -152,6 +194,7 @@ function App() {
               YData ? (
                 <Stack
                   key={y}
+                  className="relative"
                   sx={{
                     position: 'relative',
                     ...(catchData.includes(YData.id as number) && {
@@ -160,6 +203,14 @@ function App() {
                     }),
                   }}
                 >
+                  {changes.includes(`${x}-${y}`) && (
+                    <>
+                      <span className="absolute top-2 right-2 flex h-3 w-3">
+                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-sky-400 opacity-75" />
+                        <span className="relative inline-flex rounded-full h-3 w-3 bg-sky-500" />
+                      </span>
+                    </>
+                  )}
                   <Box
                     sx={{ fontSize: { sm: '16pt', md: '18pt', lg: '20pt' } }}
                     paddingBottom="4px"
@@ -189,15 +240,26 @@ function App() {
           </Grid2>
         ))}
       </Grid2>
-      <Box sx={{ position: 'fixed', bottom: '2em', right: '2em' }}>
+      <Box>
+        <Button type="button" onClick={() => setOpen((x) => !x)}>
+          剩餘人數 {users.filter((x) => !dataUsers.includes(x)).length}
+        </Button>
         <button onClick={download}>下載</button>
       </Box>
-      <Box>
-        {(users.length - dataUsers.length <= 10
-          ? users.filter((x) => !dataUsers.includes(x))
-          : []
-        ).join(', ')}
-      </Box>
+      <Popup open={open}>
+        <Box
+          mx={{
+            zIndex: 20,
+            margin: '8px',
+            padding: '12px 16px',
+            borderRadius: '8px',
+            border: '1px solid #ccc',
+            backgroundColor: 'white',
+          }}
+        >
+          {users.filter((x) => !dataUsers.includes(x)).join(', ')}
+        </Box>
+      </Popup>
     </>
   );
 }
