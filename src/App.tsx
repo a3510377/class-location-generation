@@ -28,7 +28,13 @@ const config = {
 export type PosDataList = (PosData | undefined)[][];
 
 function App() {
-  const [open, setOpen] = useState<boolean>(false);
+  const [anchor, setAnchor] = useState<null | HTMLElement>(null);
+
+  const handleClick = (event: React.MouseEvent<HTMLElement>) => {
+    setAnchor(anchor ? null : event.currentTarget);
+  };
+
+  const open = Boolean(anchor);
   const [data, setData] = useState<PosDataList>(() => []);
   const [changes, setChanges] = useState<string[]>(() => []);
   const [users, setUsers] = useState<string[]>(() => []);
@@ -36,6 +42,7 @@ function App() {
   const [catchData, setCatchData] = useState<number[]>(() => []);
   const baseFont = { fontSize: { sm: '14pt', md: '16pt', lg: '18pt' } };
 
+  const id = open ? 'simple-popup' : undefined;
   useEffect(() => {
     const socket = io(import.meta.env.VITE_API_URL);
     socket.connect();
@@ -211,12 +218,10 @@ function App() {
                   }}
                 >
                   {changes.includes(`${x}-${y}`) && (
-                    <>
-                      <span className="absolute top-2 right-2 flex h-3 w-3">
-                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-sky-400 opacity-75" />
-                        <span className="relative inline-flex rounded-full h-3 w-3 bg-sky-500" />
-                      </span>
-                    </>
+                    <span className="absolute top-2 right-2 flex h-3 w-3">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-sky-400 opacity-75" />
+                      <span className="relative inline-flex rounded-full h-3 w-3 bg-sky-500" />
+                    </span>
                   )}
                   <Box
                     sx={{ fontSize: { sm: '16pt', md: '18pt', lg: '20pt' } }}
@@ -248,12 +253,12 @@ function App() {
         ))}
       </Grid2>
       <Box>
-        <Button type="button" onClick={() => setOpen((x) => !x)}>
+        <Button type="button" aria-describedby={id} onClick={handleClick}>
           剩餘人數 {users.filter((x) => !dataUsers.includes(x)).length}
         </Button>
         <button onClick={download}>下載</button>
       </Box>
-      <Popup open={open}>
+      <Popup id={id} open={open} anchor={anchor}>
         <Box
           mx={{
             zIndex: 20,
