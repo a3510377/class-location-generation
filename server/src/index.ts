@@ -39,7 +39,7 @@ export async function main() {
     origin: [
       'http://localhost:3000',
       'http://localhost:5173',
-      'https://monkey-cat.com/',
+      'https://monkey-cat.com',
       'https://a3510377.github.io',
     ],
   };
