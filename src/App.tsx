@@ -67,9 +67,16 @@ function App() {
 
           for (const change of newChanges) {
             setTimeout(() => {
-              setChanges((prevChanges) =>
-                prevChanges.splice(prevChanges.indexOf(change), 1)
-              );
+              setChanges((prevChanges) => {
+                const index = prevChanges.indexOf(change);
+                if (index !== -1) {
+                  return [
+                    ...prevChanges.slice(0, index),
+                    ...prevChanges.slice(index + 1),
+                  ];
+                }
+                return prevChanges;
+              });
             }, 2e3);
           }
         }
